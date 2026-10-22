@@ -3,7 +3,7 @@
 Built for **[Hacktober HackDays 2026](https://unstop.com/hackathons)** on Unstop (₹1,00,000 INR Cash Prize Pool).  
 **Track:** Open Source Building & Problem Solving with Cloudinary  
 **Team Format:** 2–4 Members  
-**Live Demo:** Deployed on Vercel  
+**Live Demo:** [https://mediavault-roan.vercel.app](https://mediavault-roan.vercel.app)  
 
 ---
 

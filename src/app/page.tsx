@@ -24,7 +24,9 @@ import {
   ChevronDown,
   LogOut,
   SlidersHorizontal,
-  Info
+  Info,
+  Code,
+  Terminal
 } from "lucide-react";
 
 interface MerchantProfile {
@@ -105,6 +107,8 @@ export default function Home() {
   const [sliderPos, setSliderPos] = useState<number>(50);
   const [activeTab, setActiveTab] = useState<"slider" | "sideBySide">("slider");
   const [canvasBg, setCanvasBg] = useState<"dark" | "light" | "checker">("dark");
+  const [codeTab, setCodeTab] = useState<"html" | "next" | "node" | "python">("html");
+  const [showCode, setShowCode] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "info" } | null>(null);
 
@@ -131,6 +135,90 @@ export default function Home() {
   const copyApiKey = () => {
     navigator.clipboard.writeText(user.apiKey);
     showToast(`API Key copied for ${user.name}`);
+  };
+
+  const copyCodeSnippet = () => {
+    navigator.clipboard.writeText(getCodeSnippet());
+    showToast(`Copied ${codeTab.toUpperCase()} code snippet to clipboard!`);
+  };
+
+  const getCodeSnippet = () => {
+    switch (codeTab) {
+      case "html":
+        return `<picture>
+  <!-- Modern AVIF with dynamic quality negotiation -->
+  <source type="image/avif" srcset="${transformedUrl.replace('f_auto', 'f_avif')}">
+  <!-- Modern WebP fallback -->
+  <source type="image/webp" srcset="${transformedUrl.replace('f_auto', 'f_webp')}">
+  <!-- Autonomous Fallback Img -->
+  <img 
+    src="${transformedUrl}" 
+    alt="Optimized E-Commerce Asset" 
+    loading="lazy" 
+    decoding="async" 
+    width="600" 
+    height="600"
+  />
+</picture>`;
+      case "next":
+        return `import Image from 'next/image';
+
+export default function ProductHero() {
+  return (
+    <div className="relative aspect-square w-full max-w-md overflow-hidden rounded-2xl bg-slate-900/60 border border-slate-800">
+      <Image
+        src="${transformedUrl}"
+        alt="Transformed E-Commerce Asset"
+        fill
+        sizes="(max-width: 768px) 100vw, 50vw"
+        className="object-contain"
+        priority={false}
+      />
+    </div>
+  );
+}`;
+      case "node":
+        return `import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: 'your_cloud_name',
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
+});
+
+// Autonomous upload & transformation
+const result = await cloudinary.uploader.upload('${currentSource}', {
+  public_id: 'product_${activePreset.id}',
+  transformation: [
+    { raw_transformation: '${activePreset.transformationStr}' }
+  ]
+});
+
+console.log('Production CDN URL:', result.secure_url);`;
+      case "python":
+        return `import os
+import cloudinary
+import cloudinary.uploader
+
+cloudinary.config(
+    cloud_name="your_cloud_name",
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+    secure=True,
+)
+
+# Autonomous upload & transformation
+response = cloudinary.uploader.upload(
+    "${currentSource}",
+    public_id="product_${activePreset.id}",
+    transformation=[
+        {"raw_transformation": "${activePreset.transformationStr}"}
+    ]
+)
+
+print("Production Edge URL:", response["secure_url"])`;
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -620,12 +708,63 @@ export default function Home() {
               >
                 Open Full Asset <ExternalLink className="w-3.5 h-3.5" />
               </a>
+              <button
+                onClick={() => setShowCode(!showCode)}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition border ${
+                  showCode
+                    ? "bg-cyan-950/60 text-cyan-300 border-cyan-500 shadow-md shadow-cyan-950/40"
+                    : "bg-[#090C17] hover:bg-slate-800 text-slate-300 border-slate-700"
+                }`}
+              >
+                <Code className="w-3.5 h-3.5 text-cyan-400" />
+                {showCode ? "Hide Developer Code" : "Integration Code"}
+              </button>
             </div>
 
             <div className="text-[11px] text-slate-400 font-mono">
               Cloudinary Transformation: <code className="text-indigo-400">/{activePreset.transformationStr}</code>
             </div>
           </div>
+
+          {/* Developer Code Generator Drawer */}
+          {showCode && (
+            <div className="bg-[#070A14] border border-cyan-500/30 rounded-xl p-4 space-y-3 animate-in fade-in duration-200">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <Terminal className="w-4 h-4 text-cyan-400" />
+                  <span className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                    Developer Code & SDK Integration
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  {(["html", "next", "node", "python"] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setCodeTab(tab)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition ${
+                        codeTab === tab
+                          ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold"
+                          : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
+                      }`}
+                    >
+                      {tab === "html" ? "HTML5" : tab === "next" ? "Next.js / React" : tab === "node" ? "Node.js" : "Python"}
+                    </button>
+                  ))}
+                  <button
+                    onClick={copyCodeSnippet}
+                    className="ml-2 px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold flex items-center gap-1 transition"
+                  >
+                    <Copy className="w-3 h-3" /> Copy Snippet
+                  </button>
+                </div>
+              </div>
+
+              <pre className="p-3 bg-black/60 rounded-lg text-[11px] font-mono text-cyan-300/90 overflow-x-auto border border-slate-800/80 leading-relaxed">
+                <code>{getCodeSnippet()}</code>
+              </pre>
+            </div>
+          )}
         </div>
       </main>
 
